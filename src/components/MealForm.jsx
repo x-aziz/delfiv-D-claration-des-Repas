@@ -92,7 +92,7 @@ const MealForm = () => {
           <div className="card-icon">
             <FileText size={28} />
           </div>
-          <h2 className="card-title">تصريح مصاريف الإفادة</h2>
+          <h2 className="card-title">تصريح مصاريف الإقامة</h2>
         </div>
 
         {submitStatus && (
