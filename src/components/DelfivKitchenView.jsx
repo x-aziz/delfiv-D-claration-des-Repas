@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { storage } from "../utils/storage";
 import { Calendar, RefreshCw, Cloud } from "lucide-react";
-
+import { getDefaultLunchConsumers, getDefaultDinnerConsumers } from "../services/employeeDatabase";
+import { vacationService } from "../services/vacationService.js";
+import { useNavigate } from "react-router-dom";
 const DelfivKitchenView = () => {
+  const navigate = useNavigate();
   const [declarations, setDeclarations] = useState([]);
   const [stats, setStats] = useState({ lunch: 0, dinner: 0 });
   const [syncMessage, setSyncMessage] = useState({ text: "", type: "" });
@@ -21,6 +24,7 @@ const DelfivKitchenView = () => {
     return () => clearInterval(interval);
   }, []);
 
+  
   const loadDeclarations = () => {
     // Filter declarations that have 'lunch' and 'dinner' fields (DELFIV type)
     const allData = storage.getDeclarationsByDate(tomorrowDate);
@@ -31,8 +35,55 @@ const DelfivKitchenView = () => {
     console.log('Delfiv data filtered:', delfivData);
     setDeclarations(delfivData);
 
-    const lunchCount = delfivData.filter((d) => d.lunch === true).length;
-    const dinnerCount = delfivData.filter((d) => d.dinner === true).length;
+    // Calculate statistics with corrected logic:
+    // Start from total default consumers, then subtract those who said "No"
+    
+    // Get all default lunch consumers (not on vacation)
+    const defaultLunchEmployees = getDefaultLunchConsumers().filter(
+      emp => !vacationService.isEmployeeOnVacation(emp.id)
+    );
+    
+    // Get all residential employees (not on vacation) for dinner
+    const defaultDinnerEmployees = getDefaultDinnerConsumers().filter(
+      emp => !vacationService.isEmployeeOnVacation(emp.id)
+    );
+    
+    // Start with total defaults
+    let lunchCount = defaultLunchEmployees.length;
+    let dinnerCount = defaultDinnerEmployees.length;
+    
+    // Subtract those who explicitly said NO
+    delfivData.forEach((d) => {
+      // For lunch: if employee said NO, subtract 1
+      if (d.lunch === false) {
+        lunchCount--;
+      }
+      
+      // For dinner: if employee said NO, subtract 1
+      if (d.dinner === false) {
+        dinnerCount--;
+      }
+    });
+    
+    // Handle edge case: if someone who defaults to NO said YES, add them
+    delfivData.forEach((d) => {
+      const employeeDefaultsLunch = defaultLunchEmployees.some(emp => emp.id === d.employeeId);
+      const employeeDefaultsDinner = defaultDinnerEmployees.some(emp => emp.id === d.employeeId);
+      
+      // If employee doesn't default to lunch but said YES
+      if (!employeeDefaultsLunch && d.lunch === true) {
+        lunchCount++;
+      }
+      
+      // If employee doesn't default to dinner but said YES
+      if (!employeeDefaultsDinner && d.dinner === true) {
+        dinnerCount++;
+      }
+    });
+
+    // Ensure counts don't go negative
+    lunchCount = Math.max(0, lunchCount);
+    dinnerCount = Math.max(0, dinnerCount);
 
     setStats({ lunch: lunchCount, dinner: dinnerCount });
   };
@@ -53,6 +104,14 @@ const DelfivKitchenView = () => {
   return (
     <div className="main-content">
       <div className="card">
+         <button
+          onClick={() => navigate(-1)}
+          className="btn"
+          style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}
+        >
+          {/* <ArrowLeft size={18} /> */}
+          رجوع
+        </button>
         <div className="card-header">
           <div className="card-icon">
             <Calendar size={28} />

@@ -86,14 +86,14 @@ const Home = () => {
               <FileText size={20} />
               إنشاء تصريح جديد
             </button>
-            <button
+            {/* <button
               onClick={() => navigate("/kitchen")}
               className="btn btn-primary"
               style={{ padding: "1rem 2.5rem", fontSize: "1.1rem" }}
             >
               <ChefHat size={20} />
               عرض المطبخ
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -130,14 +130,14 @@ const Home = () => {
               <Utensils size={20} />
               تصريح الوجبات
             </button>
-            <button
+            {/* <button
               onClick={() => navigate("/delfiv-cuisine")}
               className="btn btn-success"
               style={{ padding: "1rem 2.5rem", fontSize: "1.1rem" }}
             >
               <Calendar size={20} />
               جدول الوجبات
-            </button>
+            </button> */}
           </div>
         </div>
 
